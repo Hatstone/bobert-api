@@ -11,10 +11,12 @@
 	<groupId>com.hatstone</groupId>
 	<artifactId>bobert-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
 	<name>bobert-api</name>
 	<description>Bobert APi</description>
 	<properties>
 		<java.version>11</java.version>
+		<start-class>com.hatstone.bobertapi.BobertApiApplication</start-class>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -34,6 +36,17 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<fork>true</fork>
+					<mainClass>${start-class}</mainClass>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
