@@ -9,7 +9,7 @@ public class User {
     private Boolean admin;
 
     // Constructors //
-    User(String displayName, String firstName, String lastName, String email, String password, Boolean admin){
+    public User(String displayName, String firstName, String lastName, String email, String password, Boolean admin){
         this.displayName = displayName;
         this.firstName = firstName;
         this.lastName = lastName;
