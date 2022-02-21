@@ -1,4 +1,4 @@
-package com.hatstone.bobertapi.auth0;
+package com.hatstone.bobertapi.security;
 
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
