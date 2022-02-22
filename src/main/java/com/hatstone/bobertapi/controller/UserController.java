@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.hatstone.bobertapi.dto.User;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,9 +26,12 @@ import javax.mail.internet.InternetAddress;
 @RequestMapping(path = "bobert-api", produces = MediaType.APPLICATION_JSON_VALUE)
 @CrossOrigin(origins = "*")
 public class UserController {
-    private final String dbUrl = "https://extendsclass.com/postgresql/07398d2";
-    private final String dbUser = "";
-    private final String dbPassword = "pls";
+    @Value("${database.url}")
+    private String dbUrl;
+    @Value("${database.username}")
+    private String dbUser;
+    @Value("${database.password}")
+    private String dbPassword;
 
     @PostMapping("/create-user")
     public ResponseEntity<Long> CreateUser(@RequestBody User user){
