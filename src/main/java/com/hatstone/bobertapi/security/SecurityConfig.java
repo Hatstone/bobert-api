@@ -42,6 +42,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
                 .mvcMatchers("/bobert-api/get-user").authenticated()
+                .mvcMatchers("/bobert-api/create-user").authenticated()
+                .mvcMatchers("/bobert-api/create-problem").authenticated()
                 .and().cors()
                 .and().oauth2ResourceServer().jwt();
     }

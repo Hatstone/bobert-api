@@ -9,7 +9,7 @@ public class Problem {
     private String status;
 
     // Constructors //
-    Problem(String language, String sourceCode, String inputCode, int timeLimit, int memoryLimit, String status) {
+    public Problem(String language, String sourceCode, String inputCode, int timeLimit, int memoryLimit, String status) {
         this.language = language;
         this.sourceCode = sourceCode;
         this.inputCode = inputCode;
