@@ -93,7 +93,8 @@ public class ProblemController {
                     int tl = rs.getInt ("timeLimit");
                     int ml = rs.getInt ("memoryLimit");
                     String status = rs.getString ("status");
-                    Problem foundProblem = new Problem(lang, sc, ic, tl, ml, status);
+                    Long cid = rs.getLong("contestId");
+                    Problem foundProblem = new Problem(lang, sc, ic, tl, ml, status, cid);
                     return new ResponseEntity<Problem>(foundProblem, HttpStatus.OK);
                 }
             } catch (Exception e) {
