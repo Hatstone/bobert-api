@@ -16,6 +16,7 @@ import com.hatstone.bobertapi.dto.Problem;
 import com.hatstone.bobertapi.dto.User;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,21 +29,18 @@ import javax.mail.internet.InternetAddress;
 @RequestMapping(path = "bobert-api", produces = MediaType.APPLICATION_JSON_VALUE)
 @CrossOrigin(origins = "*")
 public class ProblemController {
-    private final String dbUrl = "https://extendsclass.com/postgresql/07398d2";
-    private final String dbProblem = "";
-    private final String dbPassword = "pls";
+    @Value("${database.url}")
+    private String dbUrl;
+    @Value("${database.username}")
+    private String dbUser;
+    @Value("${database.password}")
+    private String dbPassword;
 
     @PostMapping("/create-problem")
     public ResponseEntity<Long> CreateProblem(@RequestBody Problem problem){
         String insertQuery = "INSERT INTO problems (language, sourceCode, inputCode, timeLimit, memoryLimit, status) VALUES(?,?,?,?,?,?)";
         long id = 0;
 
-//        try {
-//            InternetAddress emailAddress = new InternetAddress(problem.getEmail());
-//        } catch (Exception e) {
-//            System.out.println(e.getMessage());
-//            return new ResponseEntity<Long>(HttpStatus.BAD_REQUEST);
-//        }
         try {
             Class.forName("org.postgresql.Driver");
             try (Connection conn = dbConnect();
@@ -95,7 +93,8 @@ public class ProblemController {
                     int tl = rs.getInt ("timeLimit");
                     int ml = rs.getInt ("memoryLimit");
                     String status = rs.getString ("status");
-                    Problem foundProblem = new Problem(lang, sc, ic, tl, ml, status);
+                    Long cid = rs.getLong("contestId");
+                    Problem foundProblem = new Problem(lang, sc, ic, tl, ml, status, cid);
                     return new ResponseEntity<Problem>(foundProblem, HttpStatus.OK);
                 }
             } catch (Exception e) {
@@ -108,6 +107,6 @@ public class ProblemController {
     }
 
     public Connection dbConnect() throws SQLException {
-        return DriverManager.getConnection(dbUrl, dbProblem, dbPassword);
+        return DriverManager.getConnection(dbUrl, dbUser, dbPassword);
     }
 }
