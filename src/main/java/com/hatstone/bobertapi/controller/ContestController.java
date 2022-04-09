@@ -97,6 +97,43 @@ public class ContestController {
         return new ResponseEntity<List<Contest>>(HttpStatus.BAD_REQUEST);
 }
 
+
+// TODO MAKE THING CORRECT WHEN PROBLEM TABLE IS FINALIZED //
+
+    @GetMapping("/get-contestproblems")
+    public ResponseEntity<List<Problem>> GetContestProblems(@RequestParam(value = "id") Long id) {
+        String contestQuery = "SELECT * FROM problems WHERE contestid  = ?";
+
+        try {
+            Class.forName("org.postgresql.Driver");
+            try (Connection conn = dbConnect(); PreparedStatement c = conn.prepareStatement(contestQuery, Statement.RETURN_GENERATED_KEYS)) {
+                c.setLong(1, id);
+                ResultSet p_rs = c.executeQuery();
+                if (!p_rs.next()) {
+                    return new ResponseEntity<List<Problem>>(HttpStatus.EXPECTATION_FAILED);
+                }
+                ArrayList<Problem> problems = new ArrayList<Problem>();
+                do {
+                    System.out.println(p_rs.toString());
+                    String description = p_rs.getString("description");
+                    String title = p_rs.getString("title");
+                    Long timelimit = p_rs.getLong("timeLimit");
+                    Long memorylimit = p_rs.getLong("memlimit");
+                    Long contestId  = p_rs.getLong("contestId");
+
+                    Problem foundProblem = new Problem(title, description, timelimit, memorylimit, contestId);
+                    problems.add(foundProblem);
+                } while (p_rs.next());
+                return new ResponseEntity<List<Problem>>(problems, HttpStatus.OK);
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return new ResponseEntity<List<Problem>>(HttpStatus.BAD_REQUEST);
+    }
+
     @GetMapping("/get-contest")
     public ResponseEntity<Contest> GetContest(@RequestParam(value = "id") Long id){
         String contestQuery = "SELECT * FROM contests WHERE id=?";
