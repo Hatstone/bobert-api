@@ -45,7 +45,7 @@ public class ProblemController {
             Class.forName("org.postgresql.Driver");
             try (Connection conn = dbConnect();
                  PreparedStatement pstmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS)) {
-                pstmt.setString(1, problem.getLanguage());
+                pstmt.setString(1, problem.getTitle());
                 pstmt.setLong(4, problem.getTimeLimit());
                 pstmt.setLong(5, problem.getMemoryLimit());
 
@@ -84,11 +84,12 @@ public class ProblemController {
                     return new ResponseEntity<Problem>(HttpStatus.EXPECTATION_FAILED);
                 }
                 else {
-                    String lang = rs.getString("language");
+                    String title = rs.getString("title");
+                    String description = rs.getString("description");
                     Long tl = rs.getLong ("timeLimit");
                     Long ml = rs.getLong ("memoryLimit");
                     Long cid = rs.getLong("contestId");
-                    Problem foundProblem = new Problem(lang, tl, ml, cid);
+                    Problem foundProblem = new Problem(title, description, tl, ml, cid);
                     return new ResponseEntity<Problem>(foundProblem, HttpStatus.OK);
                 }
             } catch (Exception e) {
