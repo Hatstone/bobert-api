@@ -30,7 +30,7 @@ public class SubmissionController {
                  PreparedStatement pstmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS)) {
                 pstmt.setLong(1, submission.getUserId());
                 pstmt.setLong(2, submission.getProblemId());
-                pstmt.setString(3, submission.getData());
+                pstmt.setBytes(3, submission.getData());
                 pstmt.setString(4, submission.getLanguage());
 
                 int affectedRows = pstmt.executeUpdate();
@@ -57,7 +57,7 @@ public class SubmissionController {
 
     @GetMapping("/get-submission")
     public ResponseEntity<Submission> GetSubmission(@RequestParam(value = "id") Long id){
-        String selectQuery = "SELECT * FROM users WHERE id=?";
+        String selectQuery = "SELECT * FROM submissions WHERE id=?";
         try {
             Class.forName("org.postgresql.Driver");
             try (Connection conn = dbConnect();
@@ -71,7 +71,7 @@ public class SubmissionController {
                 else {
                     Long uid = rs.getLong("userid");
                     Long pid = rs.getLong ("problemid");
-                    String data = rs.getString ("data");
+                    byte[] data = rs.getBytes ("data");
                     String lang = rs.getString ("language");
                     Submission foundSubmission = new Submission(uid, pid, data, lang);
                     return new ResponseEntity<Submission>(foundSubmission, HttpStatus.OK);
