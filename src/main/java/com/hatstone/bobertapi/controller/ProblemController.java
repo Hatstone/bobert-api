@@ -38,14 +38,16 @@ public class ProblemController {
 
     @PostMapping("/create-problem")
     public ResponseEntity<Long> CreateProblem(@RequestBody Problem problem){
-        String insertQuery = "INSERT INTO problems (language, sourceCode, inputCode, timeLimit, memoryLimit, status) VALUES(?,?,?,?,?,?)";
+        String insertQuery = "INSERT INTO problems (contestid, title, description, timelimit, memlimit) VALUES(?,?,?,?,?)";
         long id = 0;
 
         try {
             Class.forName("org.postgresql.Driver");
             try (Connection conn = dbConnect();
                  PreparedStatement pstmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS)) {
-                pstmt.setString(1, problem.getTitle());
+                pstmt.setLong(1, problem.getContestId());
+                pstmt.setString(2, problem.getTitle());
+                pstmt.setString(3, problem.getDescription());
                 pstmt.setLong(4, problem.getTimeLimit());
                 pstmt.setLong(5, problem.getMemoryLimit());
 
