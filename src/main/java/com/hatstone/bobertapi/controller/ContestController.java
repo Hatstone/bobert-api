@@ -35,7 +35,7 @@ public class ContestController {
     private String dbPassword;
 
     @PostMapping("/create-contest")
-    public ResponseEntity<Long> CreateProblem(@RequestParam(value="title") String title){
+    public ResponseEntity<Long> CreateContest(@RequestParam(value="title") String title){
         String insertQuery = "INSERT INTO contests(title) VALUES(?)";
         long id = 0;
 
@@ -66,41 +66,54 @@ public class ContestController {
         return new ResponseEntity<Long>(HttpStatus.BAD_REQUEST);
     }
 
+    @GetMapping("/get-usercontests")
+    public ResponseEntity<List<Contest>> GetUserContests(@RequestParam(value = "id") Long id) {
+    String contestQuery = "SELECT * FROM contests WHERE id in (SELECT contestid FROM usercontestinteractions WHERE userid = ?)";
+
+        try {
+        Class.forName("org.postgresql.Driver");
+        try (Connection conn = dbConnect(); PreparedStatement c = conn.prepareStatement(contestQuery, Statement.RETURN_GENERATED_KEYS)) {
+            c.setLong(1, id);
+            ResultSet c_rs = c.executeQuery();
+            if (!c_rs.next()) {
+                return new ResponseEntity<List<Contest>>(HttpStatus.EXPECTATION_FAILED);
+            }
+            ArrayList<Contest> contests = new ArrayList<Contest>();
+            do {
+                System.out.println(c_rs.toString());
+                Long cid = c_rs.getLong(1);
+                String title = c_rs.getString("title");
+
+                Contest foundContest = new Contest(cid, title);
+                contests.add(foundContest);
+            } while (c_rs.next());
+            return new ResponseEntity<List<Contest>>(contests, HttpStatus.OK);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    } catch (Exception e) {
+        System.out.println(e.getMessage());
+    }
+        return new ResponseEntity<List<Contest>>(HttpStatus.BAD_REQUEST);
+}
+
     @GetMapping("/get-contest")
-    public ResponseEntity<Contest> GetProblem(@RequestParam(value = "id") Long id){
+    public ResponseEntity<Contest> GetContest(@RequestParam(value = "id") Long id){
         String contestQuery = "SELECT * FROM contests WHERE id=?";
-        String problemQuery = "SELECT * FROM problems WHERE contestid=?";
-        String userQuery = "SELECT * FROM usercontestinteractions where contestid=?";
 
         try {
             Class.forName("org.postgresql.Driver");
-            try (Connection conn = dbConnect();
-                    PreparedStatement c = conn.prepareStatement(contestQuery, Statement.RETURN_GENERATED_KEYS);
-                    PreparedStatement p = conn.prepareStatement(problemQuery, Statement.RETURN_GENERATED_KEYS);
-                    PreparedStatement u = conn.prepareStatement(userQuery, Statement.RETURN_GENERATED_KEYS)) {
+            try (Connection conn = dbConnect(); PreparedStatement c = conn.prepareStatement(contestQuery, Statement.RETURN_GENERATED_KEYS)) {
                 c.setLong(1, id);
                 ResultSet c_rs = c.executeQuery();
-                p.setLong(1, id);
-                ResultSet p_rs = p.executeQuery();
-                u.setLong(1, id);
-                ResultSet u_rs = u.executeQuery();
-                if (!c_rs.next() || !p_rs.next() || !u_rs.next()) {
+                if (!c_rs.next()) {
                     return new ResponseEntity<Contest>(HttpStatus.EXPECTATION_FAILED);
                 }
                 else {
+                    Long cid = c_rs.getLong("id");
                     String title = c_rs.getString("title");
 
-                    List<Long> problems = new ArrayList<Long>();
-                    do{
-                        problems.add(p_rs.getLong("contestId"));
-                    } while(p_rs.next());
-
-                    List<Long> users = new ArrayList<Long>();
-                    do{
-                        users.add(u_rs.getLong("userId"));
-                    } while(u_rs.next());
-
-                    Contest foundContest = new Contest(title, problems, users);
+                    Contest foundContest = new Contest(cid, title);
                     return new ResponseEntity<Contest>(foundContest, HttpStatus.OK);
                 }
             } catch (Exception e) {
