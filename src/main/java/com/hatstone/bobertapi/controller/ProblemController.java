@@ -46,11 +46,9 @@ public class ProblemController {
             try (Connection conn = dbConnect();
                  PreparedStatement pstmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS)) {
                 pstmt.setString(1, problem.getLanguage());
-                pstmt.setString(2, problem.getSourceCode());
-                pstmt.setString(3, problem.getInputCode());
+                pstmt.setBytes(2, problem.getSourceCode());
                 pstmt.setInt(4, problem.getTimeLimit());
                 pstmt.setInt(5, problem.getMemoryLimit());
-                pstmt.setString(6, problem.getStatus());
 
                 int affectedRows = pstmt.executeUpdate();
 
@@ -88,13 +86,11 @@ public class ProblemController {
                 }
                 else {
                     String lang = rs.getString("language");
-                    String sc = rs.getString ("sourceCode");
-                    String ic = rs.getString ("inputCode");
+                    byte[] sc = rs.getBytes ("sourceCode");
                     int tl = rs.getInt ("timeLimit");
                     int ml = rs.getInt ("memoryLimit");
-                    String status = rs.getString ("status");
                     Long cid = rs.getLong("contestId");
-                    Problem foundProblem = new Problem(lang, sc, ic, tl, ml, status, cid);
+                    Problem foundProblem = new Problem(lang, sc, tl, ml, cid);
                     return new ResponseEntity<Problem>(foundProblem, HttpStatus.OK);
                 }
             } catch (Exception e) {
