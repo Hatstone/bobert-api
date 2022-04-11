@@ -7,6 +7,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping(path = "bobert-api", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -83,6 +85,40 @@ public class SubmissionController {
             System.out.println(e.getMessage());
         }
         return new ResponseEntity<Submission>(HttpStatus.BAD_REQUEST);
+        //hi mom
+    }
+
+    @GetMapping("/get-userproblemsubmissions")
+    public ResponseEntity<List<Submission>> GetUserProblemSubmissions(@RequestParam(value = "uid") Long uid, @RequestParam(value = "pid") Long pid){
+        String selectQuery = "SELECT * FROM submissions WHERE userid = ? AND problemid = ?";
+        try {
+            Class.forName("org.postgresql.Driver");
+            try (Connection conn = dbConnect();
+                 PreparedStatement pstmt = conn.prepareStatement(selectQuery,
+                         Statement.RETURN_GENERATED_KEYS)) {
+                pstmt.setLong(1, uid);
+                pstmt.setLong(2, pid);
+                ResultSet rs = pstmt.executeQuery();
+                if (!rs.next()) {
+                    return new ResponseEntity<List<Submission>>(HttpStatus.EXPECTATION_FAILED);
+                }
+                ArrayList<Submission> submissions = new ArrayList<Submission>();
+                do {
+                    Long userid = rs.getLong("userid");
+                    Long problemid = rs.getLong ("problemid");
+                    byte[] data = rs.getBytes ("data");
+                    String lang = rs.getString ("language");
+                    Submission foundSubmission = new Submission(uid, pid, data, lang);
+                    submissions.add(foundSubmission);
+                } while (rs.next());
+                return new ResponseEntity<List<Submission>>(submissions, HttpStatus.OK);
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return new ResponseEntity<List<Submission>>(HttpStatus.BAD_REQUEST);
     }
 
     public Connection dbConnect() throws SQLException {
