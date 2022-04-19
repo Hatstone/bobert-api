@@ -102,7 +102,7 @@ public class ContestController {
 
     @GetMapping("/get-contestproblems")
     public ResponseEntity<List<Problem>> GetContestProblems(@RequestParam(value = "id") Long id) {
-        String contestQuery = "SELECT * FROM problems WHERE contestid  = ?";
+        String contestQuery = "SELECT * FROM problems WHERE contestid = ?";
 
         try {
             Class.forName("org.postgresql.Driver");
