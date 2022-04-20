@@ -117,11 +117,9 @@ public class ContestController {
                     System.out.println(p_rs.toString());
                     String description = p_rs.getString("description");
                     String title = p_rs.getString("title");
-                    Long timelimit = p_rs.getLong("timeLimit");
-                    Long memorylimit = p_rs.getLong("memlimit");
                     Long contestId  = p_rs.getLong("contestId");
 
-                    Problem foundProblem = new Problem(title, description, timelimit, memorylimit, contestId);
+                    Problem foundProblem = new Problem(title, description, contestId);
                     problems.add(foundProblem);
                 } while (p_rs.next());
                 return new ResponseEntity<List<Problem>>(problems, HttpStatus.OK);

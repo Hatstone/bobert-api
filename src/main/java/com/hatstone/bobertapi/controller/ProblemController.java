@@ -48,8 +48,7 @@ public class ProblemController {
                 pstmt.setLong(1, problem.getContestId());
                 pstmt.setString(2, problem.getTitle());
                 pstmt.setString(3, problem.getDescription());
-                pstmt.setLong(4, problem.getTimeLimit());
-                pstmt.setLong(5, problem.getMemoryLimit());
+
 
                 int affectedRows = pstmt.executeUpdate();
 
@@ -88,10 +87,8 @@ public class ProblemController {
                 else {
                     String title = rs.getString("title");
                     String description = rs.getString("description");
-                    Long tl = rs.getLong ("timeLimit");
-                    Long ml = rs.getLong ("memoryLimit");
                     Long cid = rs.getLong("contestId");
-                    Problem foundProblem = new Problem(title, description, tl, ml, cid);
+                    Problem foundProblem = new Problem(title, description, cid);
                     return new ResponseEntity<Problem>(foundProblem, HttpStatus.OK);
                 }
             } catch (Exception e) {
