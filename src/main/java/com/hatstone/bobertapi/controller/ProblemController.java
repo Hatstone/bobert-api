@@ -38,7 +38,7 @@ public class ProblemController {
 
     @PostMapping("/create-problem")
     public ResponseEntity<Long> CreateProblem(@RequestBody Problem problem){
-        String insertQuery = "INSERT INTO problems (contestid, title, description, timelimit, memlimit) VALUES(?,?,?,?,?)";
+        String insertQuery = "INSERT INTO problems (contestid, title, description) VALUES(?,?,?)";
         long id = 0;
 
         try {
