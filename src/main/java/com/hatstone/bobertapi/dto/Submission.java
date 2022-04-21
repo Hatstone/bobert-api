@@ -1,5 +1,7 @@
 package com.hatstone.bobertapi.dto;
 
+import java.io.Serializable;
+
 public class Submission {
     private Long userid;
     private Long problemid;

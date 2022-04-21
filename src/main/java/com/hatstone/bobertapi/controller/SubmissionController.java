@@ -1,11 +1,15 @@
 package com.hatstone.bobertapi.controller;
 
+import com.hatstone.bobertapi.dto.RunObject;
 import com.hatstone.bobertapi.dto.Submission;
+import com.hatstone.bobertapi.services.RestService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,12 +28,15 @@ public class SubmissionController {
     @PostMapping("/create-submission")
     public ResponseEntity<Long> CreateSubmission(@RequestBody Submission submission){
         String insertQuery = "INSERT INTO submissions (userid, problemid, data, language) VALUES(?,?,?,?)";
+        String fetchArgsQuery = "SELECT inputargs FROM testcases INNER JOIN submissions ON testcases.problemid = ?";
         long id = 0;
+        RestService restService = null;
 
         try {
             Class.forName("org.postgresql.Driver");
             try (Connection conn = dbConnect();
-                 PreparedStatement pstmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS)) {
+                 PreparedStatement pstmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
+                 PreparedStatement pstmtArgs = conn.prepareStatement(fetchArgsQuery, Statement.RETURN_GENERATED_KEYS)) {
                 pstmt.setLong(1, submission.getUserId());
                 pstmt.setLong(2, submission.getProblemId());
                 pstmt.setBytes(3, submission.getData());
@@ -42,6 +49,26 @@ public class SubmissionController {
                         if (rs.next()) {
                             id = rs.getLong(1);
                         }
+
+                        //////////////////////////////////////////////////////////////////
+                        //  Deal with RestService Stuff
+                        //////////////////////////////////////////////////////////////////
+                        pstmtArgs.setLong(1, submission.getProblemId());
+                        ResultSet rsArgs = pstmtArgs.executeQuery();
+
+                        if (!rs.next()) {
+                            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
+                        }
+                        else {
+                            String args = rsArgs.getString("inputargs");
+                            String code = new String(submission.getData(), StandardCharsets.UTF_8);
+                            String result = restService.createRunObject(submission.getLanguage(),code, args);
+
+                            //Pass result back into ResponseEntity!
+                            //return new ResponseEntity<String>(result, HttpStatus.OK); //Something like this
+                        }
+                        //////////////////////////////////////////////////////////////////
+
                         return new ResponseEntity<Long>(id, HttpStatus.OK);
                     } catch (SQLException ex) {
                         System.out.println(ex.getMessage());
