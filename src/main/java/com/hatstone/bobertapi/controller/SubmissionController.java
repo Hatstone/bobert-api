@@ -28,7 +28,8 @@ public class SubmissionController {
     @PostMapping("/create-submission")
     public ResponseEntity<Long> CreateSubmission(@RequestBody Submission submission){
         String insertQuery = "INSERT INTO submissions (userid, problemid, data, language) VALUES(?,?,?,?)";
-        String fetchArgsQuery = "SELECT inputargs FROM testcases INNER JOIN submissions ON testcases.problemid = ?";
+        String fetchArgsQuery = "SELECT inputargs FROM testcases WHERE problemid = ?";
+        
         long id = 0;
         RestService restService = null;
 
