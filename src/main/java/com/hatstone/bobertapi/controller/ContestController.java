@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.hatstone.bobertapi.dto.Contest;
 import com.hatstone.bobertapi.dto.Problem;
 import com.hatstone.bobertapi.dto.User;
+import com.hatstone.bobertapi.dto.ContestWithAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -35,14 +36,16 @@ public class ContestController {
     private String dbPassword;
 
     @PostMapping("/create-contest")
-    public ResponseEntity<Long> CreateContest(@RequestParam(value="title") String title){
+    public ResponseEntity<Long> CreateContest(@RequestParam(value="title") String title, @RequestParam(value="uid") Long uid){
         String insertQuery = "INSERT INTO contests(title) VALUES(?)";
+        String insertQuery2 = "INSERT INTO usercontestinteractions(userid, contestid, teamid) VALUES(?,?,?)";
         long id = 0;
 
         try {
             Class.forName("org.postgresql.Driver");
             try (Connection conn = dbConnect();
-                PreparedStatement pstmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement pstmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement pstmt2 = conn.prepareStatement(insertQuery2, Statement.RETURN_GENERATED_KEYS)) {
                 pstmt.setString(1, title);
 
                 int affectedRows = pstmt.executeUpdate();
@@ -52,6 +55,10 @@ public class ContestController {
                         if (rs.next()) {
                             id = rs.getLong(1);
                         }
+                        pstmt2.setLong(1, uid);
+                        pstmt2.setLong(2, id);
+                        pstmt2.setLong(3, 2);
+                        pstmt2.executeUpdate();
                         return new ResponseEntity<Long>(id, HttpStatus.OK);
                     } catch (SQLException ex) {
                         System.out.println(ex.getMessage());
@@ -67,34 +74,39 @@ public class ContestController {
     }
 
     @GetMapping("/get-usercontests")
-    public ResponseEntity<List<Contest>> GetUserContests(@RequestParam(value = "id") Long id) {
-    String contestQuery = "SELECT * FROM contests WHERE id in (SELECT contestid FROM usercontestinteractions WHERE userid = ?)";
+    public ResponseEntity<List<ContestWithAdmin>> GetUserContests(@RequestParam(value = "id") Long id) {
+    String contestQuery = "SELECT * FROM contests LEFT OUTER JOIN usercontestinteractions ON contests.id = usercontestinteractions.contestid WHERE id in (SELECT contestid FROM usercontestinteractions WHERE userid = ?)";
 
         try {
         Class.forName("org.postgresql.Driver");
-        try (Connection conn = dbConnect(); PreparedStatement c = conn.prepareStatement(contestQuery, Statement.RETURN_GENERATED_KEYS)) {
+        try (
+            Connection conn = dbConnect();
+            PreparedStatement c = conn.prepareStatement(contestQuery, Statement.RETURN_GENERATED_KEYS)
+
+        ) {
             c.setLong(1, id);
             ResultSet c_rs = c.executeQuery();
             if (!c_rs.next()) {
-                return new ResponseEntity<List<Contest>>(HttpStatus.EXPECTATION_FAILED);
+                return new ResponseEntity<List<ContestWithAdmin>>(HttpStatus.EXPECTATION_FAILED);
             }
-            ArrayList<Contest> contests = new ArrayList<Contest>();
+            ArrayList<ContestWithAdmin> contests = new ArrayList<ContestWithAdmin>();
             do {
                 System.out.println(c_rs.toString());
                 Long cid = c_rs.getLong(1);
                 String title = c_rs.getString("title");
 
                 Contest foundContest = new Contest(cid, title);
-                contests.add(foundContest);
+                ContestWithAdmin cadmin = new ContestWithAdmin(foundContest, c_rs.getLong("teamid") == 2);
+                contests.add(cadmin);
             } while (c_rs.next());
-            return new ResponseEntity<List<Contest>>(contests, HttpStatus.OK);
+            return new ResponseEntity<List<ContestWithAdmin>>(contests, HttpStatus.OK);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
     } catch (Exception e) {
         System.out.println(e.getMessage());
     }
-        return new ResponseEntity<List<Contest>>(HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<List<ContestWithAdmin>>(HttpStatus.BAD_REQUEST);
 }
 
 
