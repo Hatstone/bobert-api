@@ -29,7 +29,7 @@ public class RestService {
 
     public String createRunObject(String language, String code, String args) {
         System.out.println("Inside RestService.createRunObject()");   //TODO: Remove me
-        String url = "localhost:5000/run";
+        String url = "http://localhost:5000/run";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
