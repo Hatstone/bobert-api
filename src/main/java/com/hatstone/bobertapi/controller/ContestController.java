@@ -146,7 +146,7 @@ public class ContestController {
 
     @GetMapping("/get-contest")
     public ResponseEntity<ContestWithAdmin> GetContest(@RequestParam(value = "id") Long id){
-        String contestQuery = "SELECT * FROM contests LEFT OUTER JOIN usercontestinteractions ON contests.id = usercontestinteractions.contestid WHERE id=?";
+        String contestQuery = "SELECT * FROM contests LEFT OUTER JOIN usercontestinteractions ON contests.id = usercontestinteractions.contestid WHERE contests.id=?";
 
         try {
             Class.forName("org.postgresql.Driver");
