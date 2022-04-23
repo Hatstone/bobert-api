@@ -85,11 +85,11 @@ public class ProblemController {
                     return new ResponseEntity<Problem>(HttpStatus.EXPECTATION_FAILED);
                 }
                 else {
-                    Long id = rs.getId("id");
+                    Long pid = rs.getLong("id");
                     String title = rs.getString("title");
                     String description = rs.getString("description");
                     Long cid = rs.getLong("contestId");
-                    Problem foundProblem = new Problem(id, title, description, cid);
+                    Problem foundProblem = new Problem(pid, title, description, cid);
                     return new ResponseEntity<Problem>(foundProblem, HttpStatus.OK);
                 }
             } catch (Exception e) {
