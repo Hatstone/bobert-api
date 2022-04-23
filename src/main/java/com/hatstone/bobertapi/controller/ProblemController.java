@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.sql.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.hatstone.bobertapi.dto.Problem;
@@ -99,9 +100,10 @@ public class ProblemController {
         String selectQuery = "SELECT * FROM problems WHERE id=?";
         try {
             Class.forName("org.postgresql.Driver");
-            try (Connection conn = dbConnect();
-                 PreparedStatement pstmt = conn.prepareStatement(selectQuery,
-                         Statement.RETURN_GENERATED_KEYS)) {
+            try (
+                Connection conn = dbConnect();
+                PreparedStatement pstmt = conn.prepareStatement(selectQuery, Statement.RETURN_GENERATED_KEYS);
+            ) {
                 pstmt.setLong(1, id);
                 ResultSet rs = pstmt.executeQuery();
                 if (!rs.next()) {
@@ -122,6 +124,41 @@ public class ProblemController {
             System.out.println(e.getMessage());
         }
         return new ResponseEntity<Problem>(HttpStatus.BAD_REQUEST);
+    }
+
+    @GetMapping("/get-contestproblems")
+    public ResponseEntity<List<Problem>> GetContestProblems(@RequestParam(value = "id") Long id) {
+        String contestQuery = "SELECT * FROM problems WHERE contestid = ?";
+
+        try {
+            Class.forName("org.postgresql.Driver");
+            try (
+                Connection conn = dbConnect();
+                PreparedStatement c = conn.prepareStatement(contestQuery, Statement.RETURN_GENERATED_KEYS);
+            ) {
+                c.setLong(1, id);
+                ResultSet p_rs = c.executeQuery();
+                if (!p_rs.next()) {
+                    return new ResponseEntity<List<Problem>>(HttpStatus.EXPECTATION_FAILED);
+                }
+                ArrayList<Problem> problems = new ArrayList<Problem>();
+                do {
+                    Long pid = p_rs.getLong("id");
+                    String description = p_rs.getString("description");
+                    String title = p_rs.getString("title");
+                    Long contestId  = p_rs.getLong("contestId");
+
+                    Problem foundProblem = new Problem(pid, title, description, contestId);
+                    problems.add(foundProblem);
+                } while (p_rs.next());
+                return new ResponseEntity<List<Problem>>(problems, HttpStatus.OK);
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return new ResponseEntity<List<Problem>>(HttpStatus.BAD_REQUEST);
     }
 
     public Connection dbConnect() throws SQLException {
