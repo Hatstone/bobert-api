@@ -100,9 +100,10 @@ public class ProblemController {
         String selectQuery = "SELECT * FROM problems WHERE id=?";
         try {
             Class.forName("org.postgresql.Driver");
-            try (Connection conn = dbConnect();
-                 PreparedStatement pstmt = conn.prepareStatement(selectQuery,
-                         Statement.RETURN_GENERATED_KEYS)) {
+            try (
+                Connection conn = dbConnect();
+                PreparedStatement pstmt = conn.prepareStatement(selectQuery, Statement.RETURN_GENERATED_KEYS);
+            ) {
                 pstmt.setLong(1, id);
                 ResultSet rs = pstmt.executeQuery();
                 if (!rs.next()) {
@@ -131,7 +132,10 @@ public class ProblemController {
 
         try {
             Class.forName("org.postgresql.Driver");
-            try (Connection conn = dbConnect(); PreparedStatement c = conn.prepareStatement(contestQuery, Statement.RETURN_GENERATED_KEYS)) {
+            try (
+                Connection conn = dbConnect();
+                PreparedStatement c = conn.prepareStatement(contestQuery, Statement.RETURN_GENERATED_KEYS);
+            ) {
                 c.setLong(1, id);
                 ResultSet p_rs = c.executeQuery();
                 if (!p_rs.next()) {

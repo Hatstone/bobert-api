@@ -46,8 +46,9 @@ public class UserController {
         }
         try {
             Class.forName("org.postgresql.Driver");
-            try (Connection conn = dbConnect();
-                PreparedStatement pstmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS)
+            try (
+                Connection conn = dbConnect();
+                PreparedStatement pstmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
             ) {
                 pstmt.setString(1, email);
                 pstmt.setBoolean(2, false);
@@ -79,8 +80,9 @@ public class UserController {
         String selectQuery = "SELECT * FROM users WHERE email=?";
         try {
             Class.forName("org.postgresql.Driver");
-            try (Connection conn = dbConnect();
-                 PreparedStatement pstmt = conn.prepareStatement(selectQuery, Statement.RETURN_GENERATED_KEYS);
+            try (
+                Connection conn = dbConnect();
+                PreparedStatement pstmt = conn.prepareStatement(selectQuery, Statement.RETURN_GENERATED_KEYS);
             ) {
                 pstmt.setString(1, email);
                 ResultSet rs = pstmt.executeQuery();

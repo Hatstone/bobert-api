@@ -43,9 +43,11 @@ public class ContestController {
 
         try {
             Class.forName("org.postgresql.Driver");
-            try (Connection conn = dbConnect();
+            try (
+                Connection conn = dbConnect();
                 PreparedStatement pstmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
-                PreparedStatement pstmt2 = conn.prepareStatement(insertQuery2, Statement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement pstmt2 = conn.prepareStatement(insertQuery2, Statement.RETURN_GENERATED_KEYS);
+            ) {
                 pstmt.setString(1, title);
 
                 int affectedRows = pstmt.executeUpdate();
@@ -115,8 +117,7 @@ public class ContestController {
             Class.forName("org.postgresql.Driver");
             try (
                 Connection conn = dbConnect();
-                PreparedStatement c = conn.prepareStatement(contestQuery, Statement.RETURN_GENERATED_KEYS)
-
+                PreparedStatement c = conn.prepareStatement(contestQuery, Statement.RETURN_GENERATED_KEYS);
             ) {
                 c.setLong(1, id);
                 ResultSet c_rs = c.executeQuery();
@@ -149,7 +150,10 @@ public class ContestController {
 
         try {
             Class.forName("org.postgresql.Driver");
-            try (Connection conn = dbConnect(); PreparedStatement c = conn.prepareStatement(contestQuery, Statement.RETURN_GENERATED_KEYS)) {
+            try (
+                Connection conn = dbConnect();
+                PreparedStatement c = conn.prepareStatement(contestQuery, Statement.RETURN_GENERATED_KEYS);
+            ) {
                 c.setLong(1, id);
                 ResultSet c_rs = c.executeQuery();
                 if (!c_rs.next()) {

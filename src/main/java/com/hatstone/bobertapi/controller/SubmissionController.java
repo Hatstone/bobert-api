@@ -1,6 +1,7 @@
 package com.hatstone.bobertapi.controller;
 
 import com.hatstone.bobertapi.dto.RunObject;
+import com.hatstone.bobertapi.dto.SubmissionResults;
 import com.hatstone.bobertapi.dto.Submission;
 import com.hatstone.bobertapi.services.RestService;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +27,7 @@ public class SubmissionController {
     private String dbPassword;
 
     @PostMapping("/create-submission")
-    public ResponseEntity<Long> CreateSubmission(@RequestBody Submission submission){
+    public ResponseEntity<SubmissionResults> CreateSubmission(@RequestBody Submission submission){
         String insertQuery = "INSERT INTO submissions (userid, problemid, data, language) VALUES(?,?,?,?)";
         String fetchArgsQuery = "SELECT inputargs FROM testcases WHERE problemid = ?";
         
@@ -35,9 +36,11 @@ public class SubmissionController {
 
         try {
             Class.forName("org.postgresql.Driver");
-            try (Connection conn = dbConnect();
-                 PreparedStatement pstmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
-                 PreparedStatement pstmtArgs = conn.prepareStatement(fetchArgsQuery, Statement.RETURN_GENERATED_KEYS)) {
+            try (
+                Connection conn = dbConnect();
+                PreparedStatement pstmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement pstmtArgs = conn.prepareStatement(fetchArgsQuery, Statement.RETURN_GENERATED_KEYS);
+            ) {
                 pstmt.setLong(1, submission.getUserId());
                 pstmt.setLong(2, submission.getProblemId());
                 pstmt.setBytes(3, submission.getData());
@@ -57,20 +60,24 @@ public class SubmissionController {
                         pstmtArgs.setLong(1, submission.getProblemId());
                         ResultSet rsArgs = pstmtArgs.executeQuery();
 
+                        double count = 0;
+                        double correct = 0;
                         if (!rsArgs.next()) {
                             return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
                         }
                         else {
-                            String args = rsArgs.getString("inputargs");
-                            String code = new String(submission.getData(), StandardCharsets.UTF_8);
-                            String result = restService.createRunObject(submission.getLanguage(), code, args);
-
-                            //Pass result back into ResponseEntity!
-                            //return new ResponseEntity<String>(result, HttpStatus.OK); //Something like this
+                            do {
+                                String args = rsArgs.getString("inputargs");
+                                String code = new String(submission.getData(), StandardCharsets.UTF_8);
+                                String result = restService.createRunObject(submission.getLanguage(), code, args);
+                                count += 1.0;
+                                if(result.equals(rsArgs.getString("expectedoutput"))) correct += 1.0;
+                            } while (rsArgs.next());
                         }
                         //////////////////////////////////////////////////////////////////
 
-                        return new ResponseEntity<Long>(id, HttpStatus.OK);
+                        SubmissionResults res = new SubmissionResults(id, correct / count);
+                        return new ResponseEntity<SubmissionResults>(res, HttpStatus.OK);
                     } catch (SQLException ex) {
                         System.out.println(ex.getMessage());
                     }
@@ -81,7 +88,7 @@ public class SubmissionController {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-        return new ResponseEntity<Long>(HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<SubmissionResults>(HttpStatus.BAD_REQUEST);
     }
 
 
@@ -90,9 +97,10 @@ public class SubmissionController {
         String selectQuery = "SELECT * FROM submissions WHERE id=?";
         try {
             Class.forName("org.postgresql.Driver");
-            try (Connection conn = dbConnect();
-                 PreparedStatement pstmt = conn.prepareStatement(selectQuery,
-                         Statement.RETURN_GENERATED_KEYS)) {
+            try (
+                Connection conn = dbConnect();
+                PreparedStatement pstmt = conn.prepareStatement(selectQuery, Statement.RETURN_GENERATED_KEYS);
+            ) {
                 pstmt.setLong(1, id);
                 ResultSet rs = pstmt.executeQuery();
                 if (!rs.next()) {
@@ -121,9 +129,10 @@ public class SubmissionController {
         String selectQuery = "SELECT * FROM submissions WHERE userid = ? AND problemid = ?";
         try {
             Class.forName("org.postgresql.Driver");
-            try (Connection conn = dbConnect();
-                 PreparedStatement pstmt = conn.prepareStatement(selectQuery,
-                         Statement.RETURN_GENERATED_KEYS)) {
+            try (
+                Connection conn = dbConnect();
+                PreparedStatement pstmt = conn.prepareStatement(selectQuery, Statement.RETURN_GENERATED_KEYS);
+            ) {
                 pstmt.setLong(1, uid);
                 pstmt.setLong(2, pid);
                 ResultSet rs = pstmt.executeQuery();
