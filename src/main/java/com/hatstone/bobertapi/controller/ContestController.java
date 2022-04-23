@@ -143,40 +143,8 @@ public class ContestController {
         return new ResponseEntity<List<ContestWithAdmin>>(HttpStatus.BAD_REQUEST);
     }
 
-    @GetMapping("/get-contestproblems")
-    public ResponseEntity<List<Problem>> GetContestProblems(@RequestParam(value = "id") Long id) {
-        String contestQuery = "SELECT * FROM problems WHERE contestid = ?";
-
-        try {
-            Class.forName("org.postgresql.Driver");
-            try (Connection conn = dbConnect(); PreparedStatement c = conn.prepareStatement(contestQuery, Statement.RETURN_GENERATED_KEYS)) {
-                c.setLong(1, id);
-                ResultSet p_rs = c.executeQuery();
-                if (!p_rs.next()) {
-                    return new ResponseEntity<List<Problem>>(HttpStatus.EXPECTATION_FAILED);
-                }
-                ArrayList<Problem> problems = new ArrayList<Problem>();
-                do {
-                    Long pid = p_rs.getLong("id");
-                    String description = p_rs.getString("description");
-                    String title = p_rs.getString("title");
-                    Long contestId  = p_rs.getLong("contestId");
-
-                    Problem foundProblem = new Problem(pid, title, description, contestId);
-                    problems.add(foundProblem);
-                } while (p_rs.next());
-                return new ResponseEntity<List<Problem>>(problems, HttpStatus.OK);
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-            }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-        return new ResponseEntity<List<Problem>>(HttpStatus.BAD_REQUEST);
-    }
-
     @GetMapping("/get-contest")
-    public ResponseEntity<ContestWithAdmin> GetContest(@RequestParam(value = "id") Long id){
+    public ResponseEntity<Contest> GetContest(@RequestParam(value = "id") Long id){
         String contestQuery = "SELECT * FROM contests LEFT OUTER JOIN usercontestinteractions ON contests.id = usercontestinteractions.contestid WHERE contests.id=?";
 
         try {
@@ -185,15 +153,14 @@ public class ContestController {
                 c.setLong(1, id);
                 ResultSet c_rs = c.executeQuery();
                 if (!c_rs.next()) {
-                    return new ResponseEntity<ContestWithAdmin>(HttpStatus.EXPECTATION_FAILED);
+                    return new ResponseEntity<Contest>(HttpStatus.EXPECTATION_FAILED);
                 }
                 else {
                     Long cid = c_rs.getLong("id");
                     String title = c_rs.getString("title");
 
                     Contest foundContest = new Contest(cid, title);
-                    ContestWithAdmin cadmin = new ContestWithAdmin(foundContest, c_rs.getLong("teamid") == 2);
-                    return new ResponseEntity<ContestWithAdmin>(cadmin, HttpStatus.OK);
+                    return new ResponseEntity<Contest>(foundContest, HttpStatus.OK);
                 }
             } catch (Exception e) {
                 System.out.println(e.getMessage());
@@ -201,7 +168,7 @@ public class ContestController {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-        return new ResponseEntity<ContestWithAdmin>(HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<Contest>(HttpStatus.BAD_REQUEST);
     }
 
     public Connection dbConnect() throws SQLException {

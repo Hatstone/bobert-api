@@ -63,7 +63,7 @@ public class SubmissionController {
                         else {
                             String args = rsArgs.getString("inputargs");
                             String code = new String(submission.getData(), StandardCharsets.UTF_8);
-                            String result = restService.createRunObject(submission.getLanguage(),code, args);
+                            String result = restService.createRunObject(submission.getLanguage(), code, args);
 
                             //Pass result back into ResponseEntity!
                             //return new ResponseEntity<String>(result, HttpStatus.OK); //Something like this
