@@ -61,7 +61,7 @@ public class ProblemController {
                     try (ResultSet rs = pstmt.getGeneratedKeys()) {
                         if (rs.next()) {
                             id = rs.getLong(1);
-                            if(problem.getTestCases().size != problem.getTestCaseOutcomes().size()){
+                            if(problem.getTestCases().size() != problem.getTestCaseOutcomes().size()){
                                 return new ResponseEntity<Long>(HttpStatus.BAD_REQUEST);
                             }
                             for(int i = 0; i < problem.getTestCases().size(); i++){
