@@ -75,7 +75,7 @@ public class ProblemController {
                             for(int i = 0; i < testCases.size(); i++){
                                 pstmt2.setString(indexCounter, testCases.get(i));
                                 pstmt2.setString(indexCounter + 1, testCaseOutcomes.get(i));
-                                pstmt2.setLong(indexCounter + 1, id);
+                                pstmt2.setLong(indexCounter + 2, id);
                                 indexCounter += 3;
                             }
                             pstmt2.executeUpdate();
