@@ -34,12 +34,12 @@ public class UserController {
     private String dbPassword;
 
     @PostMapping("/create-user")
-    public ResponseEntity<Long> CreateUser(@RequestBody User user){
-        String insertQuery = "INSERT INTO users (displayName, firstName, lastName, email, password, admin) VALUES(?,?,?,?,?,?)";
+    public ResponseEntity<Long> CreateUser(@RequestParam String email){
+        String insertQuery = "INSERT INTO users (email, admin) VALUES(?,?)";
         long id = 0;
 
         try {
-            InternetAddress emailAddress = new InternetAddress(user.getEmail());
+            InternetAddress emailAddress = new InternetAddress(email);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return new ResponseEntity<Long>(HttpStatus.BAD_REQUEST);
@@ -47,13 +47,10 @@ public class UserController {
         try {
             Class.forName("org.postgresql.Driver");
             try (Connection conn = dbConnect();
-                 PreparedStatement pstmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS)) {
-                pstmt.setString(1, user.getDisplayName());
-                pstmt.setString(2, user.getFirstName());
-                pstmt.setString(3, user.getLastName());
-                pstmt.setString(4, user.getEmail());
-                pstmt.setString(5, user.getPassword());
-                pstmt.setBoolean(6, user.getAdmin());
+                PreparedStatement pstmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS)
+            ) {
+                pstmt.setString(1, email);
+                pstmt.setBoolean(2, false);
 
                 int affectedRows = pstmt.executeUpdate();
 
@@ -78,27 +75,21 @@ public class UserController {
 
 
     @GetMapping("/get-user")
-    public ResponseEntity<User> GetUser(@RequestParam(value = "id") Long id){
-        String selectQuery = "SELECT * FROM users WHERE id=?";
+    public ResponseEntity<Long> GetUser(@RequestParam(value = "id") String email){
+        String selectQuery = "SELECT * FROM users WHERE email=?";
         try {
             Class.forName("org.postgresql.Driver");
             try (Connection conn = dbConnect();
-                 PreparedStatement pstmt = conn.prepareStatement(selectQuery,
-                         Statement.RETURN_GENERATED_KEYS)) {
-                pstmt.setLong(1, id);
+                 PreparedStatement pstmt = conn.prepareStatement(selectQuery, Statement.RETURN_GENERATED_KEYS);
+            ) {
+                pstmt.setString(1, email);
                 ResultSet rs = pstmt.executeQuery();
                 if (!rs.next()) {
-                    return new ResponseEntity<User>(HttpStatus.EXPECTATION_FAILED);
+                    return new ResponseEntity<Long>(HttpStatus.EXPECTATION_FAILED);
                 }
                 else {
-                    String dn = rs.getString("displayName");
-                    String fn = rs.getString ("firstName");
-                    String ln = rs.getString ("lastName");
-                    String email = rs.getString ("email");
-                    String pw = rs.getString ("password");
-                    Boolean admin = rs.getBoolean ("admin");
-                    User foundUser = new User(dn, fn, ln, email, pw, admin);
-                    return new ResponseEntity<User>(foundUser, HttpStatus.OK);
+                    Long id = rs.getLong("id");
+                    return new ResponseEntity<Long>(id, HttpStatus.OK);
                 }
             } catch (Exception e) {
                 System.out.println(e.getMessage());
@@ -106,7 +97,7 @@ public class UserController {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-        return new ResponseEntity<User>(HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<Long>(HttpStatus.BAD_REQUEST);
     }
 
     public Connection dbConnect() throws SQLException {
