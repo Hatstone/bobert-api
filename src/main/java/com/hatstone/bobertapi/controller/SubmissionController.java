@@ -5,6 +5,7 @@ import com.hatstone.bobertapi.dto.SubmissionResults;
 import com.hatstone.bobertapi.dto.Submission;
 import com.hatstone.bobertapi.services.RestService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +33,7 @@ public class SubmissionController {
         String fetchArgsQuery = "SELECT * FROM testcases WHERE problemid = ?";
         
         long id = 0;
-        RestService restService = null;
+        RestService restService = new RestService(new RestTemplateBuilder());
 
         try {
             Class.forName("org.postgresql.Driver");
