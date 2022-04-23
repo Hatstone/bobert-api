@@ -56,7 +56,7 @@ public class SubmissionController {
                         pstmtArgs.setLong(1, submission.getProblemId());
                         ResultSet rsArgs = pstmtArgs.executeQuery();
 
-                        if (!rs.next()) {
+                        if (!rsArgs.next()) {
                             return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
                         }
                         else {
