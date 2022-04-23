@@ -126,7 +126,6 @@ public class ContestController {
                 }
                 ArrayList<ContestWithAdmin> contests = new ArrayList<ContestWithAdmin>();
                 do {
-                    System.out.println(c_rs.toString());
                     Long cid = c_rs.getLong(1);
                     String title = c_rs.getString("title");
 
