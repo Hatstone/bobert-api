@@ -32,9 +32,9 @@ public class RestService {
         String url = "http://localhost:5000/run";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+//        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         RunObject runObj = new RunObject(language, code, args);
-        HttpEntity<RunObject> entity = new HttpEntity<>(runObj, headers);
+        HttpEntity<RunObject> entity = new HttpEntity<RunObject>(runObj, headers);
         return restTemplate.postForObject(url, entity, String.class);
     }
 }
