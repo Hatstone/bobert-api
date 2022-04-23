@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.hatstone.bobertapi.dto.Problem;
+import com.hatstone.bobertapi.dto.ProblemWithTestCases;
 import com.hatstone.bobertapi.dto.User;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,18 +38,22 @@ public class ProblemController {
     private String dbPassword;
 
     @PostMapping("/create-problem")
-    public ResponseEntity<Long> CreateProblem(@RequestBody Problem problem){
+    public ResponseEntity<Long> CreateProblem(@RequestBody ProblemWithTestCases problem){
         String insertQuery = "INSERT INTO problems (contestid, title, description) VALUES(?,?,?)";
+        // question marks are missing from this next query because the number of them
+        // is dynamic and they're added below
+        String insertTestCaseQuery = "INSERT INTO testcases (inputargs, expectedoutput, problemid) VALUES";
         long id = 0;
 
         try {
             Class.forName("org.postgresql.Driver");
-            try (Connection conn = dbConnect();
-                 PreparedStatement pstmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS)) {
-                pstmt.setLong(1, problem.getContestId());
-                pstmt.setString(2, problem.getTitle());
-                pstmt.setString(3, problem.getDescription());
-
+            try (
+                Connection conn = dbConnect();
+                PreparedStatement pstmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
+            ) {
+                pstmt.setLong(1, problem.getProblem().getContestId());
+                pstmt.setString(2, problem.getProblem().getTitle());
+                pstmt.setString(3, problem.getProblem().getDescription());
 
                 int affectedRows = pstmt.executeUpdate();
 
@@ -56,6 +61,24 @@ public class ProblemController {
                     try (ResultSet rs = pstmt.getGeneratedKeys()) {
                         if (rs.next()) {
                             id = rs.getLong(1);
+                            if(problem.getTestCases().size() != problem.getTestCaseOutcomes().size()){
+                                return new ResponseEntity<Long>(HttpStatus.BAD_REQUEST);
+                            }
+                            for(int i = 0; i < problem.getTestCases().size(); i++){
+                                insertTestCaseQuery += "(?,?,?),";
+                            }
+                            insertTestCaseQuery = insertTestCaseQuery.substring(0, insertTestCaseQuery.length() - 1);
+                            PreparedStatement pstmt2 = conn.prepareStatement(insertTestCaseQuery, Statement.RETURN_GENERATED_KEYS);
+                            int indexCounter = 1;
+                            List<String> testCases = problem.getTestCases();
+                            List<String> testCaseOutcomes = problem.getTestCaseOutcomes();
+                            for(int i = 0; i < testCases.size(); i++){
+                                pstmt2.setString(indexCounter, testCases.get(i));
+                                pstmt2.setString(indexCounter + 1, testCaseOutcomes.get(i));
+                                pstmt2.setLong(indexCounter + 2, id);
+                                indexCounter += 3;
+                            }
+                            pstmt2.executeUpdate();
                         }
                         return new ResponseEntity<Long>(id, HttpStatus.OK);
                     } catch (SQLException ex) {

@@ -32,19 +32,7 @@ The API for Bobert, our programming contest platform
 
 ```
 {
-	"title": "My First Contest!",
-	"users": [
-		1, //user IDs, may be updated to be full User objects later by frontend request
-		2,
-		3,
-		4  //...
-	],
-	"problems": [
-		1, //problem IDs, may be updated to be full Problem objects later by frontend request
-		2,
-		3,
-		4  //...
-	]
+	"title": "My First Contest!"
 }
 ```
 
@@ -62,19 +50,26 @@ The API for Bobert, our programming contest platform
 
 ```
 {
-	"language": "example programming language",
-	"sourceCode": "print('hello, world!')", //we still need to figure out how we're handling this, likely a reference to an instruction PDF?
-	"inputCode": "print('hello, world 2!')", //same deal as above
-	"timeLimit": 300, //time limit for the problem in seconds
-	"memoryLimit": 1000, //memory limit for the problem in MB
-	"status": "open"
+	"title": "some title",
+	"description: "some description",
+	"contestId": 5,
+	"testCases": [
+		"param1",
+		"param2",
+		"param3"
+	],
+	"testCaseOutcomes": [
+		"outcome1",
+		"outcome2",
+		"outcome3"
+	]
 }
 ```
 
 ### GET
 
-`/get-problem?id=X`: Returns a Problem object with `id=X` from the database, in the format shown above, as well as an HTTP status.
+`/get-problem?id=X`: Returns a Problem object with `id=X` from the database, in the format shown above (minus testCases and testCaseOutcomes), as well as an HTTP status.
 
 ### POST
 
-`/create-problem`: Returns the ID of the created Problem and an HTTP status. Body of the request must contain a Problem object as shown above.
+`/create-problem`: Returns the ID of the created Problem and an HTTP status. Body of the request must contain a Problem object formatted exactly as shown above.
