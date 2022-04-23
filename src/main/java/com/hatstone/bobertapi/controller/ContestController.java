@@ -75,7 +75,7 @@ public class ContestController {
 
     @GetMapping("/get-usercontests")
     public ResponseEntity<List<ContestWithAdmin>> GetUserContests(@RequestParam(value = "id") Long id) {
-    String contestQuery = "SELECT * FROM contests LEFT OUTER JOIN usercontestinteractions ON contests.id = usercontestinteractions.contestid WHERE id in (SELECT contestid FROM usercontestinteractions WHERE userid = ?)";
+    String contestQuery = "SELECT * FROM contests LEFT OUTER JOIN usercontestinteractions ON contests.id = usercontestinteractions.contestid WHERE contests.id in (SELECT contestid FROM usercontestinteractions WHERE userid = ?)";
 
         try {
         Class.forName("org.postgresql.Driver");
