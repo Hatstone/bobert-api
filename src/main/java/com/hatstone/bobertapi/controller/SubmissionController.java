@@ -43,7 +43,7 @@ public class SubmissionController {
             ) {
                 pstmt.setLong(1, submission.getUserId());
                 pstmt.setLong(2, submission.getProblemId());
-                pstmt.setBytes(3, submission.getData());
+                pstmt.setString(3, submission.getData());
                 pstmt.setString(4, submission.getLanguage());
 
                 int affectedRows = pstmt.executeUpdate();
@@ -68,8 +68,7 @@ public class SubmissionController {
                         else {
                             do {
                                 String args = rsArgs.getString("inputargs");
-                                String code = new String(submission.getData(), StandardCharsets.UTF_8);
-                                String result = restService.createRunObject(submission.getLanguage(), code, args);
+                                String result = restService.createRunObject(submission.getLanguage(), submission.getData(), args);
                                 count += 1.0;
                                 if(result.equals(rsArgs.getString("expectedoutput"))) correct += 1.0;
                             } while (rsArgs.next());
@@ -109,7 +108,7 @@ public class SubmissionController {
                 else {
                     Long uid = rs.getLong("userid");
                     Long pid = rs.getLong ("problemid");
-                    byte[] data = rs.getBytes ("data");
+                    String data = rs.getString ("data");
                     String lang = rs.getString ("language");
                     Submission foundSubmission = new Submission(uid, pid, data, lang);
                     return new ResponseEntity<Submission>(foundSubmission, HttpStatus.OK);
@@ -141,11 +140,11 @@ public class SubmissionController {
                 }
                 ArrayList<Submission> submissions = new ArrayList<Submission>();
                 do {
-                    Long userid = rs.getLong("userid");
-                    Long problemid = rs.getLong ("problemid");
-                    byte[] data = rs.getBytes ("data");
+                    Long userId = rs.getLong("userid");
+                    Long problemId = rs.getLong ("problemid");
+                    String data = rs.getString ("data");
                     String lang = rs.getString ("language");
-                    Submission foundSubmission = new Submission(uid, pid, data, lang);
+                    Submission foundSubmission = new Submission(userId, problemId, data, lang);
                     submissions.add(foundSubmission);
                 } while (rs.next());
                 return new ResponseEntity<List<Submission>>(submissions, HttpStatus.OK);
