@@ -30,21 +30,6 @@ The API for Bobert, our programming contest platform
 
 ### JSON Object Structure
 
-The structue of the data returned depends on which endpoint is called, as shown below.
-
-### GET
-
-`/bobert-api/get-contest?id=X`: Returns a Contest object with `id=X` from the database, in the format shown below, as well as an HTTP status.
-
-```
-{
-	"id": 1,
-	"title": "some contest title"
-}
-```
-
-`/bobert-api/get-usercontests?id=X`: Returns a list of Contest objects where the User with `id=X` is a participant as a list of JSON objects, as well as an HTTP status. The format for this request's response differs from the other Contest responses, as it also contains information on whether or not the given User is an admin of each Contest (a User is automatically an admin of any Contest they create). It returns a list of JSON objects in the following format:
-
 ```
 {
 	"contest": {
@@ -54,6 +39,12 @@ The structue of the data returned depends on which endpoint is called, as shown 
 	"isAdmin": false
 }
 ```
+
+### GET
+
+`/bobert-api/get-contest?id=X`: Returns a Contest object with `id=X` from the database, in the format shown above, as well as an HTTP status.
+
+`/bobert-api/get-usercontests?id=X`: Returns a list of Contest objects where the User with `id=X` is a participant as a list of JSON objects in the format shown above, as well as an HTTP status.
 
 ### POST
 
