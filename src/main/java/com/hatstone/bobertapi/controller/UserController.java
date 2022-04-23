@@ -34,7 +34,7 @@ public class UserController {
     private String dbPassword;
 
     @PostMapping("/create-user")
-    public ResponseEntity<Long> CreateUser(@RequestParam String email){
+    public ResponseEntity<Long> CreateUser(@RequestParam(value="email") String email){
         String insertQuery = "INSERT INTO users (email, admin) VALUES(?,?)";
         long id = 0;
 
@@ -75,7 +75,7 @@ public class UserController {
 
 
     @GetMapping("/get-user")
-    public ResponseEntity<Long> GetUser(@RequestParam(value = "id") String email){
+    public ResponseEntity<Long> GetUser(@RequestParam(value = "email") String email){
         String selectQuery = "SELECT * FROM users WHERE email=?";
         try {
             Class.forName("org.postgresql.Driver");
