@@ -101,7 +101,7 @@ The structue of the data returned depends on which endpoint is called, as shown 
 {
 	"userId": 1,
 	"problemId": 1,
-	"data": [...], // the user's submitted code is processed into a byte array and placed here
+	"data": [...], // the user's submitted code is placed here as a string
 	"language": "python"
 }
 ```
