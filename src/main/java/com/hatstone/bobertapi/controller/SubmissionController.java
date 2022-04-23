@@ -50,7 +50,6 @@ public class SubmissionController {
 
                 if (affectedRows > 0) {
                     try (ResultSet rs = pstmt.getGeneratedKeys()) {
-                        System.out.println("IN TRY CATCH");
                         if (rs.next()) {
                             id = rs.getLong(1);
                         }
@@ -60,7 +59,6 @@ public class SubmissionController {
                         //////////////////////////////////////////////////////////////////
                         pstmtArgs.setLong(1, submission.getProblemId());
                         ResultSet rsArgs = pstmtArgs.executeQuery();
-                        System.out.println(submission.getProblemId());
 
                         double count = 0.0;
                         double correct = 0.0;
@@ -69,7 +67,6 @@ public class SubmissionController {
                         }
                         else {
                             do {
-                                System.out.println("IN DO WHILE");
                                 String args = rsArgs.getString("inputargs");
                                 String result = restService.createRunObject(submission.getLanguage(), submission.getData(), args);
                                 count += 1.0;
