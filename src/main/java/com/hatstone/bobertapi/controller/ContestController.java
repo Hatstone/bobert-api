@@ -114,12 +114,12 @@ public class ContestController {
                 }
                 ArrayList<Problem> problems = new ArrayList<Problem>();
                 do {
-                    System.out.println(p_rs.toString());
+                    Long id = p_rs.getLong("id");
                     String description = p_rs.getString("description");
                     String title = p_rs.getString("title");
                     Long contestId  = p_rs.getLong("contestId");
 
-                    Problem foundProblem = new Problem(title, description, contestId);
+                    Problem foundProblem = new Problem(id, title, description, contestId);
                     problems.add(foundProblem);
                 } while (p_rs.next());
                 return new ResponseEntity<List<Problem>>(problems, HttpStatus.OK);
