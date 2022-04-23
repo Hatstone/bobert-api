@@ -105,4 +105,4 @@ The API for Bobert, our programming contest platform
 
 ### POST
 
-`/bobert-api/create-submission`: Returns the ID of the created Submission and an HTTP status. Body of the request must contain a Submission object formatted as shown above. Runs the submitted code in our containerized code runner with all Problem-relevant test case arguments and checks against the corresponding expected outputs. Will in the future return the correctness of the Submission against anonymized clumps of test cases.
+`/bobert-api/create-submission`: Returns the ID of the created Submission, the portion of the test cases passed, and an HTTP status. Body of the request must contain a Submission object formatted as shown above. Runs the submitted code in our containerized code runner with all Problem-relevant test case arguments and checks against the corresponding expected outputs.
