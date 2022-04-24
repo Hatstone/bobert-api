@@ -29,7 +29,7 @@ public class SubmissionController {
 
     @PostMapping("/create-submission")
     public ResponseEntity<SubmissionResults> CreateSubmission(@RequestBody Submission submission){
-        String insertQuery = "INSERT INTO submissions (userid, problemid, data, language) VALUES(?,?,?,?)";
+        String insertQuery = "INSERT INTO submissions (userid, problemid, data, language, portioncorrect) VALUES(?,?,?,?,?)";
         String fetchArgsQuery = "SELECT * FROM testcases WHERE problemid = ?";
         
         long id = 0;
@@ -42,49 +42,50 @@ public class SubmissionController {
                 PreparedStatement pstmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
                 PreparedStatement pstmtArgs = conn.prepareStatement(fetchArgsQuery, Statement.RETURN_GENERATED_KEYS);
             ) {
-                pstmt.setLong(1, submission.getUserId());
-                pstmt.setLong(2, submission.getProblemId());
-                pstmt.setString(3, submission.getData());
-                pstmt.setString(4, submission.getLanguage());
-
-                int affectedRows = pstmt.executeUpdate();
-
-                if (affectedRows > 0) {
-                    try (ResultSet rs = pstmt.getGeneratedKeys()) {
-                        if (rs.next()) {
-                            id = rs.getLong(1);
-                        }
-
-                        //////////////////////////////////////////////////////////////////
-                        //  Deal with RestService Stuff
-                        //////////////////////////////////////////////////////////////////
-                        pstmtArgs.setLong(1, submission.getProblemId());
-                        ResultSet rsArgs = pstmtArgs.executeQuery();
-
-                        double count = 0.0;
-                        double correct = 0.0;
-                        if (!rsArgs.next()) {
-                            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
-                        }
-                        else {
-                            do {
-                                String args = rsArgs.getString("inputargs");
-                                String result = restService.createRunObject(submission.getLanguage(), submission.getData(), args);
-                                count += 1.0;
-                                String expected = rsArgs.getString("expectedoutput");
-                                if(result.charAt(result.length() - 1) == '\n'){
-                                    result = result.substring(0, result.length() - 1);
-                                }
-                                if(result.equals(expected)) correct += 1.0;
-                            } while (rsArgs.next());
-                        }
-                        //////////////////////////////////////////////////////////////////
-
-                        SubmissionResults res = new SubmissionResults(id, correct / count);
-                        return new ResponseEntity<SubmissionResults>(res, HttpStatus.OK);
-                    } catch (SQLException ex) {
-                        System.out.println(ex.getMessage());
+                try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        id = rs.getLong(1);
                     }
+
+                    //////////////////////////////////////////////////////////////////
+                    //  Deal with RestService Stuff
+                    //////////////////////////////////////////////////////////////////
+                    pstmtArgs.setLong(1, submission.getProblemId());
+                    ResultSet rsArgs = pstmtArgs.executeQuery();
+
+                    float count = 0;
+                    float correct = 0;
+                    if (!rsArgs.next()) {
+                        return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
+                    }
+                    else {
+                        do {
+                            String args = rsArgs.getString("inputargs");
+                            String result = restService.createRunObject(submission.getLanguage(), submission.getData(), args);
+                            count += 1.0;
+                            String expected = rsArgs.getString("expectedoutput");
+                            if(result.charAt(result.length() - 1) == '\n'){
+                                result = result.substring(0, result.length() - 1);
+                            }
+                            if(result.equals(expected)) correct += 1.0;
+                        } while (rsArgs.next());
+                    }
+                    //////////////////////////////////////////////////////////////////
+
+                    float portionCorrect = correct / count;
+                    pstmt.setLong(1, submission.getUserId());
+                    pstmt.setLong(2, submission.getProblemId());
+                    pstmt.setString(3, submission.getData());
+                    pstmt.setString(4, submission.getLanguage());
+                    pstmt.setFloat(5, portionCorrect);
+
+                    int affectedRows = pstmt.executeUpdate();
+                    if(affectedRows > 0) {
+                        SubmissionResults res = new SubmissionResults(id, portionCorrect);
+                        return new ResponseEntity<SubmissionResults>(res, HttpStatus.OK);
+                    }
+                } catch (SQLException ex) {
+                    System.out.println(ex.getMessage());
                 }
             } catch (Exception e) {
                 System.out.println(e.getMessage());
