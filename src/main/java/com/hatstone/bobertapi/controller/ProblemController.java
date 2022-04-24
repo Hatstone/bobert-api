@@ -83,7 +83,7 @@ public class ProblemController {
     @GetMapping("/get-problem")
     public ResponseEntity<Problem> GetProblem(@RequestParam(value = "pid") Long pid, @RequestParam(value = "uid") Long uid){
         String selectQuery = "SELECT * FROM problems WHERE id=?";
-        String highestPortionQuery = "SELECT portioncorrect FROM submissions WHERE userid = ? AND problemid = ? ORDER BY portioncorrect desc LIMIT 1";
+        String highestPortionQuery = "SELECT portioncorrect FROM submissions WHERE userid = ? AND problemid = ? AND portioncorrect NOT NULL ORDER BY portioncorrect desc LIMIT 1";
         try {
             Class.forName("org.postgresql.Driver");
             try (
@@ -124,7 +124,7 @@ public class ProblemController {
     @GetMapping("/get-contestproblems")
     public ResponseEntity<List<Problem>> GetContestProblems(@RequestParam(value = "cid") Long cid, @RequestParam(value = "uid") Long uid) {
         String contestQuery = "SELECT * FROM problems WHERE contestid = ?";
-        String highestPortionQuery = "SELECT portioncorrect FROM submissions WHERE userid = ? AND problemid = ? ORDER BY portioncorrect desc LIMIT 1";
+        String highestPortionQuery = "SELECT portioncorrect FROM submissions WHERE userid = ? AND problemid = ? AND portioncorrect NOT NULL ORDER BY portioncorrect desc LIMIT 1";
 
         try {
             Class.forName("org.postgresql.Driver");
