@@ -72,8 +72,8 @@ public class SubmissionController {
                                 String result = restService.createRunObject(submission.getLanguage(), submission.getData(), args);
                                 count += 1.0;
                                 String expected = rsArgs.getString("expectedoutput");
-                                if(expected.charAt(expected.length() - 1) == '\n'){
-                                    expected = expected.substring(0, expected.length() - 1);
+                                if(result.charAt(result.length() - 1) == '\n'){
+                                    result = result.substring(0, result.length() - 1);
                                 }
                                 if(result.equals(expected)) correct += 1.0;
                             } while (rsArgs.next());
