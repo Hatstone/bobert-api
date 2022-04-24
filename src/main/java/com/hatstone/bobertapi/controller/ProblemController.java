@@ -1,31 +1,16 @@
 package com.hatstone.bobertapi.controller;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.*;
-import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicLong;
 
 import com.hatstone.bobertapi.dto.Problem;
 import com.hatstone.bobertapi.dto.ProblemWithTestCases;
-import com.hatstone.bobertapi.dto.User;
-import org.apache.coyote.Response;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
-import java.sql.*;
-import javax.mail.internet.InternetAddress;
 
 @RestController
 @RequestMapping(path = "bobert-api", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -96,25 +81,35 @@ public class ProblemController {
     }
 
     @GetMapping("/get-problem")
-    public ResponseEntity<Problem> GetProblem(@RequestParam(value = "id") Long id){
+    public ResponseEntity<Problem> GetProblem(@RequestParam(value = "pid") Long pid, @RequestParam(value = "uid") Long uid){
         String selectQuery = "SELECT * FROM problems WHERE id=?";
+        String highestPortionQuery = "SELECT portioncorrect FROM submissions WHERE userid = ? AND problemid = ? ORDER BY portioncorrect desc LIMIT 1";
         try {
             Class.forName("org.postgresql.Driver");
             try (
                 Connection conn = dbConnect();
                 PreparedStatement pstmt = conn.prepareStatement(selectQuery, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement hpc = conn.prepareStatement(highestPortionQuery, Statement.RETURN_GENERATED_KEYS);
             ) {
-                pstmt.setLong(1, id);
+                pstmt.setLong(1, pid);
                 ResultSet rs = pstmt.executeQuery();
                 if (!rs.next()) {
                     return new ResponseEntity<Problem>(HttpStatus.EXPECTATION_FAILED);
                 }
                 else {
-                    Long pid = rs.getLong("id");
                     String title = rs.getString("title");
                     String description = rs.getString("description");
                     Long cid = rs.getLong("contestId");
-                    Problem foundProblem = new Problem(pid, title, description, cid);
+
+                    hpc.setLong(1, uid);
+                    hpc.setLong(2, pid);
+                    ResultSet hpc_rs = hpc.executeQuery();
+                    Float portionCorrect = (float)0;
+                    if (hpc_rs.next()) {
+                        portionCorrect = hpc_rs.getFloat("portioncorrect");
+                    }
+
+                    Problem foundProblem = new Problem(pid, title, description, cid, portionCorrect);
                     return new ResponseEntity<Problem>(foundProblem, HttpStatus.OK);
                 }
             } catch (Exception e) {
@@ -127,16 +122,18 @@ public class ProblemController {
     }
 
     @GetMapping("/get-contestproblems")
-    public ResponseEntity<List<Problem>> GetContestProblems(@RequestParam(value = "id") Long id) {
+    public ResponseEntity<List<Problem>> GetContestProblems(@RequestParam(value = "cid") Long cid, @RequestParam(value = "uid") Long uid) {
         String contestQuery = "SELECT * FROM problems WHERE contestid = ?";
+        String highestPortionQuery = "SELECT portioncorrect FROM submissions WHERE userid = ? AND problemid = ? ORDER BY portioncorrect desc LIMIT 1";
 
         try {
             Class.forName("org.postgresql.Driver");
             try (
                 Connection conn = dbConnect();
                 PreparedStatement c = conn.prepareStatement(contestQuery, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement hpc = conn.prepareStatement(highestPortionQuery, Statement.RETURN_GENERATED_KEYS);
             ) {
-                c.setLong(1, id);
+                c.setLong(1, cid);
                 ResultSet p_rs = c.executeQuery();
                 if (!p_rs.next()) {
                     return new ResponseEntity<List<Problem>>(HttpStatus.EXPECTATION_FAILED);
@@ -148,7 +145,15 @@ public class ProblemController {
                     String title = p_rs.getString("title");
                     Long contestId  = p_rs.getLong("contestId");
 
-                    Problem foundProblem = new Problem(pid, title, description, contestId);
+                    hpc.setLong(1, uid);
+                    hpc.setLong(2, pid);
+                    ResultSet hpc_rs = hpc.executeQuery();
+                    Float portionCorrect = (float)0;
+                    if (hpc_rs.next()) {
+                        portionCorrect = hpc_rs.getFloat("portioncorrect");
+                    }
+
+                    Problem foundProblem = new Problem(pid, title, description, contestId, portionCorrect);
                     problems.add(foundProblem);
                 } while (p_rs.next());
                 return new ResponseEntity<List<Problem>>(problems, HttpStatus.OK);

@@ -61,6 +61,7 @@ The API for Bobert, our programming contest platform
 	"title": "some title",
 	"description: "some description",
 	"contestId": 1,
+	"portionCorrect": 0.5,
 	"testCases": [
 		"param1",
 		"param2",
@@ -82,7 +83,7 @@ The API for Bobert, our programming contest platform
 
 ### POST
 
-`/bobert-api/create-problem`: Returns the ID of the created Problem and an HTTP status. Body of the request must contain a Problem object formatted exactly as shown above.
+`/bobert-api/create-problem`: Returns the ID of the created Problem and an HTTP status. Body of the request must contain a Problem object formatted exactly as shown above (minus portionCorrect).
 
 ## Submissions
 

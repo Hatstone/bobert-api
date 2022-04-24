@@ -9,7 +9,7 @@ public class ProblemWithTestCases {
     private List<String> testCaseOutcomes;
 
     public ProblemWithTestCases(String title, String description, Long contestId, List<String> testCases, List<String> testCaseOutcomes){
-        problem = new Problem((long)0, title, description, contestId);
+        problem = new Problem((long)0, title, description, contestId, (float)0);
         this.testCases = testCases;
         this.testCaseOutcomes = testCaseOutcomes;
     }
